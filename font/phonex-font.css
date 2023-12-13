@@ -1,0 +1,129 @@
+@font-face {
+  font-family: "HARRYP__";
+  src: url("./HARRYP__.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Minecraft";
+  src: url("./PantonRustHeavy-GrSh.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "PantonRustHeavy-GrSh";
+  src: url("./PantonRustHeavy-GrSh.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "pricedow";
+  src: url("./pricedow.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Rust";
+  src: url("./Rust.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "SairaStencilOne-Regular";
+  src: url("./SairaStencilOne-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "TT Mussels Stencil Trial ExtraBold";
+  src: url("./TT Mussels Stencil Trial ExtraBold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "TheBeast";
+  src: url("./TheBeast.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "IndividigitalBlack-valE";
+  src: url("./IndividigitalBlack-valE.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "AndroidAssassin-grz1";
+  src: url("./AndroidAssassin-grz1.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Robus-BWqOd";
+  src: url("./Robus-BWqOd.ttf") format("truetype");
+}
+
+/*harrypoter*/
+.harryp {
+  font-family: "HARRYP__";
+  transition: color 0.3s;
+}
+
+/*minecraft*/
+
+.minecraft {
+  font-family: "Minecraft";
+  transition: color 0.3s;
+}
+
+/*panton*/
+
+.panton {
+  font-family: "PantonRustHeavy-GrSh";
+  transition: color 0.3s;
+}
+
+/*pricedow*/
+
+.pricedow {
+  font-family: "pricedow";
+  transition: color 0.3s;
+}
+
+/*Rust*/
+
+.rust {
+  font-family: "Rust";
+  transition: color 0.3s;
+}
+/*regular*/
+
+.regular {
+  font-family: "SairaStencilOne-Regular";
+
+  transition: color 0.3s;
+}
+
+/*Stencil*/
+.Stencil {
+  font-family: "TT Mussels Stencil Trial ExtraBold";
+  transition: color 0.3s;
+}
+
+/*thebeast*/
+
+.beast {
+  font-family: "TheBeast";
+  transition: color 0.3s;
+}
+
+/*Individ*/
+
+.Individ {
+  font-family: "IndividigitalBlack-valE";
+  transition: color 0.3s;
+}
+
+/*android*/
+
+.android {
+  font-family: "AndroidAssassin-grz1";
+  transition: color 0.3s;
+}
+
+/*Robus*/
+
+.robus {
+  font-family: "Robus-BWqOd";
+  transition: color 0.3s;
+}
