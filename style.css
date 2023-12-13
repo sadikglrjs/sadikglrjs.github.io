@@ -18,3 +18,14 @@
 ::-webkit-scrollbar-thumb {
   background: #4d4d4d;
 }
+
+p {
+  font-size: 50px;
+  display: block;
+  text-align: center;
+  line-height: 100px;
+  height: 100px;
+  margin-top: 40vh;
+  text-transform: uppercase;
+  letter-spacing: 10px;
+}
