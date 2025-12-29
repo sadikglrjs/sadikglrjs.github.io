@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>papatyamm</title>
+    <style>
+        /* --- CSS --- */
+        
+        /* Genel Ayarlar */
+        :root {
+            --globe-size: 350px; /* Masaüstü boyutu */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at center top, #2c3e50 0%, #000000 100%);
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            flex-direction: column; 
+        }
+
+        /* --- SAYAÇ STİLLERİ --- */
+        #timer-container {
+            position: absolute;
+            top: 10%; 
+            z-index: 200;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+            transition: opacity 0.5s;
+            width: 90%;
+        }
+
+        /* Başlık Kaldırıldı, sadece rakamlar kaldı */
+        .timer-digits {
+            font-size: 3rem;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: inline-block;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- MESAJLAR --- */
+
+        /* Zaman dolunca çıkacak mesaj (Yeşil/Altın tonları) */
+        .ready-message {
+            display: none;
+            font-size: 2rem;
+            color: #69f0ae; /* Yumuşak bir yeşil/turkuaz */
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            animation: pulse 1s infinite;
+            position: absolute;
+            top: 20%;
+            z-index: 200;
+            text-align: center;
+            width: 90%;
+            font-family: 'Brush Script MT', cursive; /* El yazısı gibi */
+        }
+
+        /* Beklemesi gerektiğinde çıkacak uyarı mesajı (Sabret papatyam) */
+        .wait-message {
+            opacity: 0; /* Başlangıçta gizli */
+            font-size: 1.8rem;
+            color: #ffab91; /* Yumuşak somon rengi */
+            position: absolute;
+            bottom: 15%; /* Hediyenin altında çıksın */
+            z-index: 200;
+            text-align: center;
+            transition: opacity 0.5s ease;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+            pointer-events: none; /* Tıklamayı engellemesin */
+        }
+        
+        /* JS ile eklenecek class: Görünür yap */
+        .show-wait-msg {
+            opacity: 1;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- HEDİYE PAKETİ --- */
+        .gift-container {
+            position: relative;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.8s ease-in-out;
+            cursor: pointer; /* Her zaman tıklanabilir hissi verelim */
+            filter: grayscale(100%);
+            margin-top: 50px;
+            /* Dokunmatik ekranlarda mavi seçimi kaldırmak için: */
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        .gift-img {
+            width: 300px;
+            max-width: 80vw;
+            height: auto;
+            filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5)); 
+            transition: transform 0.3s, filter 0.3s;
+        }
+
+        /* Kilidi açılınca */
+        .gift-unlocked {
+            filter: grayscale(0%);
+            animation: floatAndShake 3s infinite ease-in-out; 
+        }
+
+        .gift-unlocked:hover .gift-img {
+            transform: scale(1.05);
+        }
+
+        @keyframes floatAndShake {
+            0% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(2deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(-5px) rotate(-2deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+
+        .gift-opened {
+            opacity: 0;
+            transform: scale(2) rotate(10deg);
+            pointer-events: none;
+        }
+
+        /* --- KAR KÜRESİ SAHNESİ --- */
+        .scene-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .scene-visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        /* --- Küre ve İçerik CSS --- */
+        .globe-title {
+            color: #f0f0f0;
+            font-family: 'Brush Script MT', 'Comic Sans MS', cursive, sans-serif;
+            font-size: 3.5rem;
+            margin: 0 0 30px 0;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 223, 186, 0.7), 0 2px 5px rgba(0,0,0,0.5);
+            z-index: 10;
+            line-height: 1.2;
+        }
+
+        .snow-globe {
+            position: relative;
+            width: var(--globe-size);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dome {
+            width: var(--globe-size);
+            height: var(--globe-size);
+            background-color: rgba(220, 240, 255, 0.1);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 20px 20px 60px rgba(255, 255, 255, 0.2), inset -10px -10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.1);
+            z-index: 2;
+        }
+
+        .glass-reflection {
+            position: absolute;
+            top: 5%; left: 10%; width: 35%; height: 20%; border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(-45deg); pointer-events: none; z-index: 20;
+        }
+
+        .shadow-base {
+            width: 70%; height: 30px; background: radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%; margin-top: -20px; z-index: 0;
+        }
+
+        #snowCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 15; pointer-events: none; }
+        .scene-content { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        .ground {
+            position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
+            width: 120%; height: 130px;
+            background: radial-gradient(ellipse at center, #fff 50%, #cce0ff 100%);
+            border-radius: 50% 50% 50% 50%;
+            box-shadow: 0 -5px 20px rgba(255,255,255,0.6); z-index: 1;
+        }
+
+        .item { position: absolute; user-select: none; filter: drop-shadow(2px 4px 5px rgba(0,0,0,0.4)); }
+        
+        /* Objeler */
+        .tree-img { width: 230px; bottom: 30px; left: -20px; z-index: 2; }
+        .couple-img { width: 190px; bottom: 25px; right: 20px; z-index: 3; }
+        .frog-img { width: 50px; bottom: 25px; left: 45%; transform: translateX(-50%); z-index: 4; }
+        .daisy-img { width: 60px; bottom: 15px; left: 100px; z-index: 10; transform: rotate(10deg); }
+
+        /* --- MOBİL RESPONSIVE AYARLARI --- */
+        @media (max-width: 480px) {
+            :root {
+                --globe-size: 290px;
+            }
+            .timer-digits {
+                font-size: 1.8rem;
+                padding: 8px 10px;
+            }
+            .globe-title {
+                font-size: 2.2rem;
+                margin-bottom: 20px;
+            }
+            .gift-img {
+                width: 220px;
+            }
+            /* Mesajların mobil konumu */
+            .ready-message {
+                font-size: 1.5rem;
+                top: 20%;
+            }
+            .wait-message {
+                font-size: 1.4rem;
+                bottom: 20%;
+            }
+
+            /* Obje mobil ayarları */
+            .tree-img { width: 180px; left: -15px; bottom: 25px; }
+            .couple-img { width: 150px; right: 10px; bottom: 25px; }
+            .frog-img { width: 40px; bottom: 20px; left: 55%; }
+            .daisy-img { width: 45px; left: 70px; bottom: 15px; }
+        }
+
+        @media (max-width: 350px) {
+            :root { --globe-size: 250px; }
+            .timer-digits { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="timer-container">
+        <div class="timer-digits" id="timer">00:00:00:00</div>
+    </div>
+
+    <div class="ready-message" id="readyMsg">
+        🎁 Hediyeni alabilirsin papatyam 🎁
+    </div>
+
+    <div class="gift-container" id="giftBox">
+        <img src="https://imgur.com/cYNIzre.png" alt="Hediye Paketi" class="gift-img">
+    </div>
+
+    <div class="wait-message" id="waitMsg">Sabret papatyam</div>
+
+    <div class="scene-container">
+        <h1 class="globe-title">Mutlu Yıllar Papatyam</h1>
+
+        <div class="snow-globe">
+            <div class="dome">
+                <canvas id="snowCanvas"></canvas>
+                <div class="scene-content">
+                    <div class="ground"></div>
+                    <img src="https://i.imgur.com/AVC0ypO.png" class="item daisy-img" alt="Papatya">
+                    <img src="https://i.imgur.com/cHkANPq.png" class="item tree-img" alt="Noel Ağacı">
+                    <img src="https://i.imgur.com/r8riHeT.png" class="item couple-img" alt="Mutlu Çift">
+                    <img src="https://i.imgur.com/xnxQK20.png" class="item frog-img" alt="Kurbağa">
+                </div>
+                <div class="glass-reflection"></div>
+            </div>
+            <div class="shadow-base"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- AYARLAR ---
+        // Hedef Tarih: 1 Ocak 2026, Saat 00:00:00
+        const targetDate = new Date('January 1, 2026 00:00:00').getTime();
+
+        const timerElement = document.getElementById('timer');
+        const timerContainer = document.getElementById('timer-container');
+        const readyMsg = document.getElementById('readyMsg');
+        const giftBox = document.getElementById('giftBox');
+        const waitMsg = document.getElementById('waitMsg');
+        let canOpen = false;
+
+        // --- SAYAÇ FONKSİYONU ---
+        const countdownInterval = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            timerElement.innerHTML = 
+                (days < 10 ? "0" + days : days) + "g " + 
+                (hours < 10 ? "0" + hours : hours) + "s " +
+                (minutes < 10 ? "0" + minutes : minutes) + "dk " + 
+                (seconds < 10 ? "0" + seconds : seconds) + "sn";
+
+            // --- SÜRE DOLDUYSA ---
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                unlockGift();
+            }
+        }, 1000);
+
+        // Hediyeyi Açılabilir Yap
+        function unlockGift() {
+            canOpen = true;
+            
+            // Sayacı gizle
+            timerContainer.style.opacity = '0';
+            setTimeout(() => { timerContainer.style.display = 'none'; }, 500);
+
+            // "Hediyeni alabilirsin" mesajını göster
+            readyMsg.style.display = 'block';
+
+            // Hediye stilini güncelle
+            giftBox.classList.add('gift-unlocked');
+        }
+
+        // Hediye Tıklama Olayı
+        giftBox.addEventListener('click', function() {
+            if (!canOpen) {
+                // ALERT YOK -> Ekrana yazı çıkarma efekti var
+                waitMsg.classList.add('show-wait-msg');
+                
+                // 2 saniye sonra yazıyı gizle
+                setTimeout(() => {
+                    waitMsg.classList.remove('show-wait-msg');
+                }, 2000);
+                return;
+            }
+
+            const scene = document.querySelector('.scene-container');
+            readyMsg.style.display = 'none'; // Mesajı kaldır
+            waitMsg.style.display = 'none';  // Bekleme mesajını tamamen kaldır
+            giftBox.classList.add('gift-opened'); // Hediyeyi aç/patlat
+
+            setTimeout(() => {
+                scene.classList.add('scene-visible');
+            }, 500);
+        });
+
+        // --- Kar Yağışı Kodu ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('snowCanvas');
+            const ctx = canvas.getContext('2d');
+            const dome = document.querySelector('.dome');
+            function resizeCanvas() {
+                canvas.width = dome.clientWidth;
+                canvas.height = dome.clientHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            class Snowflake {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * -canvas.height;
+                    this.size = Math.random() * 3 + 1;
+                    this.speed = Math.random() * 1 + 0.5;
+                    this.opacity = Math.random() * 0.5 + 0.3;
+                    this.sway = Math.random() * 0.5 - 0.25; 
+                }
+                update() {
+                    this.y += this.speed;
+                    this.x += this.sway;
+                    if (this.y > canvas.height) this.reset();
+                    if (this.x > canvas.width) this.x = 0;
+                    if (this.x < 0) this.x = canvas.width;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                    ctx.fill();
+                    ctx.closePath();
+                }
+            }
+            const flakes = [];
+            for (let i = 0; i < 150; i++) {
+                flakes.push(new Snowflake());
+                flakes[i].y = Math.random() * canvas.height;
+            }
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                flakes.forEach(flake => { flake.update(); flake.draw(); });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        });
+    </script>
+</body>
+</html>
